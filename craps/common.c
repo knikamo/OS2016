@@ -22,16 +22,21 @@
 volatile sig_atomic_t winner = 0;
 /* TODO: Change this to 0 to make the children spin in the for loop before they
    receive the SIGUSR2 signal */
-volatile sig_atomic_t results = 1;
+volatile sig_atomic_t results = 0;
 
 /**
  * end_handler - handle the SIGUSR2 signal, the player will receive
  * this signal when the game ends
  * @signum: the signal that triggered this handler
  */
-void end_handler(int signum)
-{
-	/* TODO: Check that the signum is indeed SIGUSR2 */
+void end_handler(int signum) {
+  /* TODO: Check that the signum is indeed SIGUSR2 */
+  //puts("end h");
+  if ((pid_t)signum == SIGUSR2) {
+    results = 1;
+    printf("EXIT: %d\n", getpid());
+  }
+
 	
 	/* TODO: "leave the game" make the appropriate changes to let the
 	   current process exit*/
@@ -44,14 +49,16 @@ void end_handler(int signum)
  * he is the winner
  * @signum: the signal that triggered this handler
  */
-void win_handler(int signum)
-{
-	/* TODO - Check that the signum is indeed SIGUSR1 */
+void win_handler(int signum) {
+  /* TODO - Check that the signum is indeed SIGUSR1 */
+  if (signum == SIGUSR1) {
+    winner = 1;
+    results = 1;
+  }
+  /* TODO - this player is the winner, make the appropriate changes
+     upon reception of this singal */
 
-	/* TODO - this player is the winner, make the appropriate changes
-	   upon reception of this singal */
-
-	signal(signum, win_handler);
+  signal(signum, win_handler);
 }
 
 
@@ -61,39 +68,42 @@ void win_handler(int signum)
  * @seed_rd_fd: file descriptor of the pipe used to read the seed from 
  * @score_wr_fd: file descriptor of the pipe used to write the scores to
  */
-void shooter(int id, int seed_fd_rd, int score_fd_wr)
-{
+void shooter(int id, int seed_fd_rd, int score_fd_wr) {
 	pid_t pid;
 	int score, seed = 0;
 
 	/* TODO: Install SIGUSR1 handler */
-
 	/* TODO: Install SIGUSR2 handler */
-
-
+	signal(SIGUSR1, win_handler);
+	signal(SIGUSR2, end_handler);	
+	
 	pid = getpid();
 	fprintf(stderr, "player %d: I'm in this game (PID = %ld)\n",
 		id, (long)pid);
 
-	/* TODO: roll the dice, but before that, get a seed from the parent */
 
+	/* TODO: roll the dice, but before that, get a seed from the parent */
+	read(seed_fd_rd, &seed, sizeof(int));
+        
 	srand(seed);
-	score = rand() % 10000;
-	
-	fprintf(stderr, "player %d: I scored %d (PID = %ld\n", id, score, (long)pid);
+	score = rand() % 6; //Det ska egentligen vara 10000, men det är oligare med en riktig tärning som har 6 sidor såklart!
+	score += 1;
+	fprintf(stderr, "player %d: I scored %d (PID = %ld)\n", id, score, (long)pid);
 	/* TODO: send my score back */
+	write(score_fd_wr, &score, sizeof(int));
 
 	/* spin while I wait for the results */
-	while (!results) ;
+        while (!results) ;
 
-	if (winner)
+	if (winner) {
 		fprintf(stderr, "player %d: Walking away rich\n", id);
-
+	}
+	
 	fprintf(stderr, "player %d: Leaving the game (PID = %ld)\n",
 		id, (long)pid);
 
 	/* TODO: free resources and exit with success */
-
+        
 	exit(EXIT_SUCCESS);
 }
 
@@ -104,8 +114,7 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr)
  * This is function is not complete, but in our case it is enough to print the
  * exit value returned by each child process
  */
-void waitstat(pid_t pid, int status)
-{
+void waitstat(pid_t pid, int status) {
 	if (WIFEXITED(status))
 		fprintf(stderr, "Child with PID = %ld terminated normally, exit"
 			" status = %d\n", (long)pid, WEXITSTATUS(status));

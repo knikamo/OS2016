@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	int id = 0;
 	int seed_rd_fd = STDIN_FILENO;
 	int score_wr_fd = STDOUT_FILENO;
-
+	printf("STDIN_F: %d\tSTDOUT_F: %d\n", STDIN_FILENO, STDOUT_FILENO);
 	if (argc == 2)
 		id = strtol(argv[1], NULL, 10);
 
