@@ -1,17 +1,22 @@
+#include "parser.h"
+
 #include <stdio.h>  // printf() 
 #include <string.h> // strlen()
 #include <ctype.h>  // isspace(), 
+#include <string.h> // strtok_r()
 
-#include "parse.h"
+
 
 void dbg_print_string(char* ptr, const char* name, const char* callee, const char* msg) {
-  fprintf(stderr, "%s()::%s (%s) \n  [0x%x] = \"%s\"\n\n", callee, name, msg, (unsigned int) ptr, ptr);
+  fprintf(stderr, "%s()::%s (%s) \n  [0x%p] = \"%s\"\n\n", callee, name, msg, ptr, ptr);
 }
 
-char const* pos2str(enum cmd_pos pos) {
-  char const* str[] = {"UNKNOWN", "Single", "First", "Middle", "Last"};
+char const* pos2str(enum cmd_pos pos, int format) {
+  char const* str[][5] = {{"u", "s", "f", "m", "l"}, 
+						 {"unknown", "single", "first", "middle", "last"}
+  };
   
-  return str[pos];
+  return str[format][pos];
 }
 
 /**
@@ -73,54 +78,7 @@ int count(char* str, char c) {
 }
 
 
-/**
- * DESCRIPTION: 
- *
- * Parses a string looking for pipe characters '|'. Everything between
- * pipe characters is considered to be a bash command.  Each call to
- * this function will search the string for a new command (left to
- * right) and populate the provided argv wiht command data.
- * 
- * INPUT:
- *
- *    line - a string with bash like commands separated with pipe
- *	     characters. After calling this function, the line string
- *	     will be altered since terminating nulls are insterted
- *	     (see argv bellow).
- * 
- *    argv - an array of string pointers. On return, this array will
- *           be populated with the argv for the current command. The
- *           argv will be populated with pointers within the orginal
- *           input line.
- *
- * OUTPUT: 
- *
- *    The possition of the returned command is returned. 
- * 
- *	single - a single command. 
- *	first  - the first command in a chain of commands. 
- *      middle - not the first and not the last command in a chain of command. 
- *      last   - the last command in a chain of commands. 
- *
- * EXAMPLE USAGE: 
- *
- *   str = "  ls -i -l | grep foo " 
- * 
- *   pos =  next_command(str, argv) ==> 
- * 
- *	pos     = first
- *	argv[0] = "ls"
- *	argv[1] = "-i"
- *	argv[2] = "-l
- *	argv[1] = NULL"
- *
- *   pos =  next_command(str, argv) ==> 
- * 
- *	pos     = last
- *	argv[0] = "grep"
- *	argv[1] = "foo"
- *	argv[2] = NULL
- */
+
 enum cmd_pos  next_command(char* line, char* argv[]) // , char* sptr1, char* sptr2) {
 {
   enum parse_state {reset, resume};

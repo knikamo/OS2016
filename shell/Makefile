@@ -1,7 +1,7 @@
 DEBUG=y
 
 CC=gcc
-CFLAGS=-Werror -Wall 
+CFLAGS=-std=gnu99 -Werror -Wall 
 LDFLAGS= 
 
 ifeq ($DEBUG), y)
@@ -11,10 +11,12 @@ else
 endif
 
 
+all: bin/shell bin/parser_test_interactive bin/parser_test_auto
 
-all: bin/shell
+bin/shell: obj/shell.o obj/parser.o obj/debug.o
+	gcc $^ -o $@
 
-bin/shell: obj/shell.o obj/parse.o
+bin/parser_test%: obj/parser.o obj/parser_test%.o
 	gcc $^ -o $@
 
 obj/%.o: src/%.c
