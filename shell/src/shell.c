@@ -82,7 +82,6 @@ int main(void) {
 
     for (int i = 0; i < num_of_children; i ++) {
       // TODO 1: Make the parent wait for all children.
-      puts("wait");
       int waitstatus = wait(NULL);
       waitstatus = wait(&waitstatus);
     }
@@ -164,8 +163,7 @@ void create_pipe(enum cmd_pos pos, int new_pipe[]) {
 
   if (pos != last && pos != single) {
     pipe(new_pipe);
-    }
-   
+    }   
 }
 
 
@@ -212,13 +210,14 @@ void parent_close_pipes(enum cmd_pos pos, int left_pipe[], int right_pipe[]) {
 
   // TODO 3: The parent must close un-used pipe descriptors. You need
   // to figure out wich descriptors that must be closed when.
+
+  
   if (pos == first) {
-    close(right_pipe[1]);
-    
+    close(right_pipe[1]); //next child can't write to its left pipe
   }
   else if (pos == middle) {
-    close(left_pipe[0]);
-    close(right_pipe[1]);
+    close(left_pipe[0]); 
+    close(right_pipe[1]); //next child can't write to its left pipe
   }
   else if (pos == last) {
     close(right_pipe[0]);
@@ -236,13 +235,10 @@ void child_redirect_io(enum cmd_pos pos, int left_pipe[], int right_pipe[]) {
 
   if (pos == first) {
     dup2(right_pipe[1], STDOUT_FILENO);
-    
   }
   else if (pos == middle) {
     dup2(right_pipe[1], STDOUT_FILENO);
-   
-    dup2(left_pipe[0], STDIN_FILENO);
-   
+    dup2(left_pipe[0], STDIN_FILENO);   
   }
   else if (pos == last) {
     dup2(left_pipe[0], STDIN_FILENO);

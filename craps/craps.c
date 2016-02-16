@@ -121,8 +121,9 @@ int main(int argc, char *argv[])
 	
 	/* TODO: cleanup resources and exit with success */
 	for (i = 0; i < NUM_PLAYERS; i++) {
-	  int waitstatus = wait(NULL);
-     	  waitstatus = wait(&waitstatus);
+	  //int waitstatus = wait(NULL);
+     	  //waitstatus = wait(&waitstatus);
+	  wait(NULL);
 	  exit(EXIT_SUCCESS);
 	}
 	return 0;
