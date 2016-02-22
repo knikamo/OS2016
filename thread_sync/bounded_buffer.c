@@ -29,6 +29,9 @@ typedef struct {
 
 
 buffer_t buffer;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+sem_t fullBuffers;
+sem_t emptyBuffers;
 
 pthread_t consumer_tid[CONSUMERS], producer_tid[PRODUCERS];
 
@@ -43,10 +46,16 @@ insert_item(int item)
     /* TODO: Check and wait if the buffer is full. Ensure exclusive
      * access to the buffer and use the existing code to remove an item.
      */
-
+    
+    
+    sem_wait(&fullBuffers); //om fullBuffers är 0, alltså att buffern är full, så väntar den
+    pthread_mutex_lock(&mutex);    
 
     buffer.value[buffer.next_in] = item;
     buffer.next_in = (buffer.next_in + 1) % BUFFER_SIZE;
+
+    sem_post(&emptyBuffers); //öka värdet på emptyBuffers, alltså fyller på
+    pthread_mutex_unlock(&mutex);
 
 
     return 0;
@@ -65,9 +74,15 @@ remove_item(int *item)
      */
 
 
+    sem_wait(&emptyBuffers);
+    pthread_mutex_lock(&mutex);
+
     *item = buffer.value[buffer.next_out];
     buffer.value[buffer.next_out] = -1;
     buffer.next_out = (buffer.next_out + 1) % BUFFER_SIZE;
+
+    sem_post(&fullBuffers);
+    pthread_mutex_unlock(&mutex);
 
     return 0;
 }
@@ -131,6 +146,8 @@ int
 main()
 {
     long int i;
+    sem_init(&fullBuffers, 0, BUFFER_SIZE);
+    sem_init(&emptyBuffers, 0, 0);
 
     srand(time(NULL));
 

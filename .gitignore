@@ -3,3 +3,8 @@
 *.o
 craps/craps
 craps/shooter
+thread_sync/bounded_buffer
+thread_sync/rendezvous
+thread_sync/synchro
+shell/bin/*
+
