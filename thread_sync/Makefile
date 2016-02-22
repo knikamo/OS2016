@@ -8,9 +8,8 @@
 DEBUG:=
 
 
-CFLAGS=-std=c99 -D_XOPEN_SOURCE=600 -Wall -Wextra
-LDLIBS= 
-#—pthreads -lrt
+CFLAGS= -std=c99 -D_XOPEN_SOURCE=600 -Wall -Wextra
+LDLIBS= -lrt
 
 CC=gcc
 

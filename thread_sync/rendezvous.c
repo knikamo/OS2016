@@ -64,16 +64,18 @@ threadB(void *param  __attribute__((unused)))
 int
 main()
 {
-    int hej = sem_init(&sem, 0, 3);
-    printf("The return value is %d\n", hej);
-    printf("errno says: %d\n", errno);
+    sem_init(&sem1, 0, 1);
+    sem_init(&sem2, 0, 1);
+
+    
+    
     pthread_t tidA, tidB;
     
     srand(time(NULL));
     pthread_setconcurrency(3);
-    int value; 
-    sem_getvalue(&sem, &value); 
-    printf("The value of the semaphors is %d\n", value);
+
+
+
 
     if (pthread_create(&tidA, NULL, threadA, NULL) ||
 	pthread_create(&tidB, NULL, threadB, NULL)) {
